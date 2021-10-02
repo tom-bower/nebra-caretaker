@@ -17,6 +17,8 @@ settings = config["SETTINGS"]
 
 AUTOMATIC_REBOOTS = settings['auto_reboot']
 HEARTBEAT_MESSAGE = settings['heartbeat']
+REBOOT_DELAY = int(settings['reboot_delay'])
+HEALTH_CHECK_INTERVAL = int(settings['health_check_interval'])
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -103,48 +105,57 @@ def status(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
 
-def reboot(*args):
-    # Reboot the TP-Link
-    # send_tplink_command('{"system":{"reboot":{"delay":0}}}')
+def reboot(update, context):
     logger.info("rebooting tplink")
     send_tplink_command('{"system":{"set_relay_state":{"state":0}}}')
-    time.sleep(30)
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'TP-Link turned off, turning on in {REBOOT_DELAY} s')
+    context.job_queue.run_once(reboot_2, REBOOT_DELAY)
+
+
+def reboot_2(context):
     send_tplink_command('{"system":{"set_relay_state":{"state":1}}}')
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'Reboot completed, TP-Link turned on')
     logger.info("tplink rebooted")
 
 
-def on(*args):
+def on(update, context):
     send_tplink_command('{"system":{"set_relay_state":{"state":1}}}')
     logger.info("tplink turned on")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'TP-Link turned on')
 
 
-def off(*args):
+def off(update, context):
     send_tplink_command('{"system":{"set_relay_state":{"state":0}}}')
     logger.info("tplink turned off")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'TP-Link turned off')
 
 
-def disable_reboot(*args):
+def disable_reboot(update, context):
     global AUTOMATIC_RESTARTS
     AUTOMATIC_RESTARTS = False
     logger.info("reboot disabled")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'Automatic reboot disabled')
 
 
-def enable_reboot(*args):
+def enable_reboot(update, context):
     global AUTOMATIC_RESTARTS
     AUTOMATIC_RESTARTS = True
     logger.info("reboot enabled")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'Automatic reboot enabled')
 
 
-def disable_heartbeat(*args):
+def disable_heartbeat(update, context):
     global HEARTBEAT_MESSAGE
     HEARTBEAT_MESSAGE = False
     logger.info("heartbeat disabled")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'Heartbeat disabled')
 
 
-def enable_heartbeat(*args):
+def enable_heartbeat(update, context):
     global HEARTBEAT_MESSAGE
     HEARTBEAT_MESSAGE = True
     logger.info("heartbeat enabled")
+    context.bot.send_message(chat_id=telegram['chat_id'], text=f'Heartbeat enabled')
 
 
 # ======================================================================================================================
@@ -174,7 +185,7 @@ def health_check(context: CallbackContext):
         context.bot.send_message(chat_id=telegram['chat_id'], text=f'Restarting miner\n'
                                                                    f'Online: {online_status}\n, '
                                                                    f'Relayed: {relayed_status}')
-        reboot()
+        reboot(None, context)
 
     if HEARTBEAT_MESSAGE and not restart_needed:
         context.bot.send_message(chat_id=telegram['chat_id'], text=f'All is fine: online - True, relayed - False')
@@ -190,6 +201,7 @@ def main():
     # defaults = Defaults(tzinfo=timezone)
 
     updater = Updater(token=telegram['token'], use_context=True)
+    job_queue = updater.job_queue
 
     help_handler = CommandHandler('help', help)
     about_handler = CommandHandler('about', help)
@@ -218,9 +230,7 @@ def main():
     dispatcher.add_handler(enable_heartbeat_handler)
 
     # updater.start_polling()
-
-    j = updater.job_queue
-    j.run_repeating(health_check, 300)
+    job_queue.run_repeating(health_check, HEALTH_CHECK_INTERVAL)
 
     updater.start_polling()
     updater.idle()

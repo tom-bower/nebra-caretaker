@@ -74,7 +74,9 @@ An example has been provided at `example.user.cfg`, please copy this file to the
 | TPLINK.port | For the plug I tested this code on, this was `9999` for the TP-Link Smart Home Protocol, go [here](https://www.softscheck.com/en/reverse-engineering-tp-link-hs110/) for more info |
 | MINER.ip | The local IP address of the miner |
 | SETTINGS.auto_reboot | Either `True` or `False`; sets whether or not automatic reboots are enabled when the bot starts (this can be changed later via Telegram) |
-| SETTINGS.heartbeat | Either `True` or `False`; sets whether or not a routine heartbeat message is sent, saying that everything is okay
+| SETTINGS.heartbeat | Either `True` or `False`; sets whether or not a routine heartbeat message is sent, saying that everything is okay |
+| SETTINGS.reboot_delay | Time in seconds between turning the TP-Link off and on during a reboot |
+| SETTINGS.health_check_interval | Time in seconds between health checks |
 
 ## Install and run
 
