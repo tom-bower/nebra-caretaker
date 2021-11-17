@@ -86,25 +86,28 @@ def help(update, context):
 
 def status(update, context):
     logger.info("querying miner for status")
+    message = ''
+    global HEARTBEAT_MESSAGE
+    global AUTOMATIC_REBOOTS
+    
     try:
-        global HEARTBEAT_MESSAGE
-        global AUTOMATIC_REBOOTS
         r = requests.get(f'http://{miner["ip"]}', params="json=true")
         j = r.json()
-        message = f'Hotspot name: {j["AN"]}\n' \
-                  f'Relayed status: {j["MR"]}\n' \
-                  f'Height status: {j["BCH"]}/{j["MH"]}\n' \
-                  f'Firmware version: {j["FW"]}\n' \
-                  f'Last updated: {j["last_updated"]}\n' \
-                  f'Reboot enabled: {AUTOMATIC_REBOOTS}\n' \
-                  f'Heartbeat enabled: {HEARTBEAT_MESSAGE}'
+        message += f'Hotspot name: {j["AN"]}\n' \
+                   f'Relayed status: {j["MR"]}\n' \
+                   f'Height status: {j["BCH"]}/{j["MH"]}\n' \
+                   f'Firmware version: {j["FW"]}\n' \
+                   f'Last updated: {j["last_updated"]}'
 
     except requests.exceptions.HTTPError:
-        message = f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
+        message += f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
     except json.decoder.JSONDecodeError:
-        message = f'Unable to get hotspot info at {miner["ip"]}, please check URL is accessible'
+        message += f'Unable to get hotspot info at {miner["ip"]}, please check URL is accessible'
     except requests.exceptions.ConnectionError:
-        message = f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
+        message += f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
+    finally:
+        message += f'Reboot enabled: {AUTOMATIC_REBOOTS}\n' \
+                   f'Heartbeat enabled: {HEARTBEAT_MESSAGE}'
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
