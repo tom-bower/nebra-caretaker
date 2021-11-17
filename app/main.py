@@ -89,7 +89,7 @@ def status(update, context):
     message = ''
     global HEARTBEAT_MESSAGE
     global AUTOMATIC_REBOOTS
-    
+
     try:
         r = requests.get(f'http://{miner["ip"]}', params="json=true")
         j = r.json()
@@ -106,7 +106,7 @@ def status(update, context):
     except requests.exceptions.ConnectionError:
         message += f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
     finally:
-        message += f'Reboot enabled: {AUTOMATIC_REBOOTS}\n' \
+        message += f'\nReboot enabled: {AUTOMATIC_REBOOTS}\n' \
                    f'Heartbeat enabled: {HEARTBEAT_MESSAGE}'
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
