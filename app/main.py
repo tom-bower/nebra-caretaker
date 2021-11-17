@@ -176,7 +176,7 @@ def health_check(context: CallbackContext):
     restart_needed = False
 
     try:
-        r = requests.get(f'http://{miner["ip"]}', params="json=true")
+        r = requests.get(f'http://{miner["ip"]}/json')
         j = r.json()
         logger.info(f'Relayed status: {j["MR"]}')
         if j["MR"]:
