@@ -180,6 +180,10 @@ def health_check(context: CallbackContext):
         context.bot.send_message(chat_id=telegram['chat_id'], text=f'Error when pinging miner, restart needed: {e}')
         online_status = False
         restart_needed = True
+    except json.decoder.JSONDecodeError as e:
+        context.bot.send_message(chat_id=telegram['chat_id'], text=f'Error when pinging miner, restart needed: {e}')
+        online_status = False
+        restart_needed = True
 
     if restart_needed and AUTOMATIC_RESTARTS:
         context.bot.send_message(chat_id=telegram['chat_id'], text=f'Restarting miner\n'
