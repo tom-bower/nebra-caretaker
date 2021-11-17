@@ -101,6 +101,8 @@ def status(update, context):
 
     except requests.exceptions.HTTPError:
         message = f'Unable to talk to hotspot at {miner["ip"]}, please check URL is accessible'
+    except json.decoder.JSONDecodeError:
+        message = f'Unable to get hotspot info at {miner["ip"]}, please check URL is accessible'
 
     context.bot.send_message(chat_id=update.effective_chat.id, text=message)
 
