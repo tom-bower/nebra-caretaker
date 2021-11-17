@@ -91,7 +91,7 @@ def status(update, context):
     global AUTOMATIC_REBOOTS
 
     try:
-        r = requests.get(f'http://{miner["ip"]}', params="json=true")
+        r = requests.get(f'http://{miner["ip"]}/json')
         j = r.json()
         message += f'Hotspot name: {j["AN"]}\n' \
                    f'Relayed status: {j["MR"]}\n' \
