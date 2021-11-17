@@ -95,7 +95,7 @@ def status(update, context):
         j = r.json()
         message += f'Hotspot name: {j["AN"]}\n' \
                    f'Relayed status: {j["MR"]}\n' \
-                   f'Height status: {j["BCH"]}/{j["MH"]}\n' \
+                   f'Height status: {j["MH"]}/{j["BCH"]}\n' \
                    f'Firmware version: {j["FW"]}\n' \
                    f'Last updated: {j["last_updated"]}'
 
